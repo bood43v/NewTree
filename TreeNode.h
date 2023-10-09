@@ -96,15 +96,56 @@ public:
                 else
                     t = t->Right();
             }
-
+            // если узлов нет, то вставить в качестве корневого узла
+            if (parent->Data() == NULL)
+                this->SetData(newNode->Data());
             // если key меньше родительского узла, вставить в качестве левого сына
-            if (key < parent->Data())
+            else if (key < parent->Data())
                 parent->SetLeft(newNode);
 
             else
                 // если key больше родительского узла
                 parent->SetRight(newNode);
         }
+    }
+
+    /// <summary>
+    /// Количество узлов - размер дерева
+    /// </summary>
+    /// <returns></returns>
+    int Size()
+    {
+        int left, right;
+        TreeNode<T>* node = this;
+        if (node->Left() == nullptr && node->Right() == nullptr)
+            return 1;
+
+
+        if (node->Left() != nullptr)
+            left = node->Left()->Size();
+        else left = 0;
+
+        if (node->Right() != nullptr)
+            right = node->Right()->Size();
+        else right = 0;
+
+        return left + right + 1;
+    }
+
+    /// Глубина дерева
+    int Depth() {
+        TreeNode<T>* t = this;
+        int depthLeft, depthRight, depth;
+        /// Если дерево пустое
+        if (t == nullptr) {
+            depth = -1;
+        }
+        else {
+            depthLeft = t->Left()->Depth();
+            depthRight = t->Right()->Depth();
+            depth = 1 + (depthLeft > depthRight ? depthLeft : depthRight);
+        }
+        return depth;
     }
 
     /// Поиск минимального в ветке (или дереве)
@@ -138,6 +179,7 @@ public:
         }
     }
 
+
     /*/// Поиск узла в дереве с возвратом указателя на узел, если он есть
     TreeNode<T>* Search(const T& item, TreeNode<T>* root_)
     {
@@ -159,11 +201,11 @@ public:
         return t;
     }*/
 
-    void Remove(T key) {
-        if (this->Search(key) != nullptr) {
-            Delete(this->Search(key))
-        }
-    }
+        //void Remove(T key) {
+        //    if (this->Search(key) != nullptr) {
+        //        Delete(this->Search(key))
+        //    }
+        //}
 
     /// Удаление узла
     void Delete() {
@@ -202,17 +244,19 @@ public:
     }
 
     /// Обход LNR и вывод в массив
-    void AddToArrayLNR(T arr[], int& i)
+    void AddToArrayLNR(T arr[], int &i)
     {
         if (this == nullptr)
             return;
         this->Left()->AddToArrayLNR(arr, i);
         this->AddToArray(arr, i);
+
         this->Right()->AddToArrayLNR(arr, i);
+
     }
 
     /// Обход NLR и вывод в массив
-    void AddToArrayNLR(T arr[], int& i)
+    void AddToArrayNLR(T arr[], int &i)
     {
         if (this == nullptr)
             return;
@@ -222,7 +266,7 @@ public:
     }
 
     /// Обход RLN и вывод в массив
-    void AddToArrayRNL(T arr[], int& i)
+    void AddToArrayRNL(T arr[], int &i)
     {
         if (this == nullptr)
             return;
