@@ -9,6 +9,11 @@ private:
     TreeNode<T>* left;
     TreeNode<T>* right;
     T data;
+    /// Добавление узла в массив
+    void AddToArray(T arr[], int& i) {
+        arr[i] = this->Data();
+        i++;
+    }
 public:
 
 
@@ -61,6 +66,8 @@ public:
     {
         TreeNode<T>* t = this;
         
+        if (t == nullptr) return nullptr;
+
         while (t != nullptr)
         {
             if (key == t->Data())
@@ -77,27 +84,41 @@ public:
         return t;
     }
 
+    /// todo: Не работает в вырожденном дереве
+
     /// Поиск узла в дереве с возвратом указателя на узел, если он есть
     TreeNode<T>* SearchParent(const T& key)
     {
         TreeNode<T>* t = this;
-        TreeNode<T>* parent = t;
+        TreeNode<T>* parent = nullptr;
+
+        if (t->Search(key) == nullptr) return nullptr;
+        if (t->Data() == key) return nullptr;
 
         while (t != nullptr)
         {
-            parent = t;
-            if (key == t->Left()->Data() || key == t->Right()->Data())
+            if ((t->Left() != nullptr && key == t->Left()->Data()) || (t->Right() != nullptr && key == t->Right()->Data()) )
+            {
+                parent = t;
                 break;
+            }  
             else
             {
-                   if (key < t->Data())
+                if (key < t->Data())
                    t = t->Left();
                 else
                    t = t->Right();
             }
         }
+        
         return parent;
     }
+   /* root_1->Insert(5);/// вырожденное 5    
+    root_1->Insert(10);///               10
+    root_1->Insert(20);///                   20
+    root_1->Insert(30);///                       30    
+    root_1->Insert(40);///                      40
+     */
 
     /// Вставка узла
     void Insert(const T& key)
@@ -180,6 +201,15 @@ public:
         return curr;
     }
 
+    /// Поиск максимального в ветке (или дереве)
+    TreeNode<T>* FindMax() {
+        TreeNode<T>* curr = this;
+        if (curr == nullptr) return nullptr;
+        while (curr->Right() != nullptr)
+            curr = curr->Right();
+        return curr;
+    }
+
     /// Следующий наибольший узел
     TreeNode<T>* Successor(const T &key) {
         /// текущий узел
@@ -207,112 +237,48 @@ public:
         }
     }
 
-    void Remove(T key) {
+    TreeNode<T>* Remove(TreeNode<T>* root, const T &key) {
         TreeNode<T>* parent;
-        TreeNode<T>* root = this;
 
-        /// Если дерево пустое
-        if (root == nullptr) return;
-          
-        /// Если такого узла нет
-        if (root->Search(key) == nullptr) std::cout << "XD";
+        /// Если пусто
+        if (root == nullptr) return nullptr;
 
-        /// Если узел найден
+        if (key < root->Data()) {
+            /// Рекурсивно удаляем значение из левого поддерева
+            root->SetLeft(Remove(root->Left(), key));
+        }
+        else if (key > root->Data()) {
+            /// Рекурсивно удаляем значение из правого поддерева
+            root->SetRight(Remove(root->Right(), key));
+        }
+        /// Найден узел, который нужно удалить
         else {
-            TreeNode<T>* found = root->Search(key);
-            /// Если нет потомков
-            if (found->Left() == nullptr && found->Right() == nullptr) {
-                found->Delete();
-                //root = nullptr;
+            if (root->Left() == nullptr && root->Right() == nullptr) {
+                /// Узел не имеет потомков
+                delete root;
+                root = nullptr;
             }
-            /// Имеет только левого потомка
-            else if (found->Left() != nullptr && found->Right() == nullptr) {
-                found->SearchParent(key)->SetLeft(found->Left());
-                found->Delete();
-                //root = nullptr;
+            else if (root->Left() == nullptr) {
+                /// Узел имеет только правого потомка
+                parent = root;
+                root = root->Right();
+                delete parent;
             }
-            /// Имеет только правого потомка
-            else if (found->Right() != nullptr && found->Left() == nullptr) {
-                found->SearchParent(key)->SetRight(found->Right());
-                found->Delete();
-                //root = nullptr;
+            else if (root->Right() == nullptr) {
+                /// Узел имеет только левого потомка
+                parent = root;
+                root = root->Left();
+                delete parent;
             }
-            /// Имеет оба потомка
             else {
-                TreeNode<T>* successor = found->Successor(found->Data());
-                TreeNode<T>* buf = found;
-                found = successor;
-                successor = buf;
-                found->Remove(successor->Data());
+                // Узел имеет оба потомка
+                TreeNode<T>* parent = root->Right()->FindMin();
+                root->SetData(parent->Data());
+                root->SetRight(Remove(root->Right(), parent->Data()));
             }
         }
-        //return root;
+        return root;
     }
-
-    //void Remove(T key) {
-    //    TreeNode<T>* parent;
-    //    TreeNode<T>* root = this;
-    //    /// Если дерево пустое
-    //    if (root == nullptr) return /*nullptr*/;
-    //    if (key < root->Data()) {
-    //        /// Удаление в левом поддереве
-    //        root->Left()->Remove(key);
-    //    }
-    //    else if (key > root->Data()) {
-    //        /// Удаление в правом поддереве
-    //        root->Right()->Remove(key);
-    //    }
-    //    /// Если узел найден
-    //    else {
-    //        /// Если нет потомков
-    //        if (root->Left() == nullptr && root->Right() == nullptr) {
-    //            root->Delete();
-    //            //root = nullptr;
-    //        }
-    //        /// Имеет только левого потомка
-    //        else if (root->Left() != nullptr && root->Right() == nullptr) {
-    //            root->SearchParent(key)->SetLeft(root->Left());
-    //            root->Delete();
-    //        }
-    //        /// Имеет только правого потомка
-    //        else if (root->Right() != nullptr && root->Left() != nullptr) {
-    //            root->SearchParent(key)->SetRight(root->Right());
-    //            root->Delete();
-    //        }
-    //        /// Имеет оба потомка
-    //        else {
-    //            TreeNode<T>* successor = root->Successor();
-    //            root = successor;
-    //            successor->Remove();
-    //        }
-    //    }
-    //    //return root;
-    //}
-
-
-
-    /*/// Поиск узла в дереве с возвратом указателя на узел, если он есть
-    TreeNode<T>* Search(const T& item, TreeNode<T>* root_)
-    {
-        TreeNode<T>* t = root_;
-        root_ = nullptr;
-        while (t != nullptr)
-        {
-            if (item == t->Data())
-                break;
-            else
-            {
-                root_ = t;
-                if (item < t->Data())
-                    t = t->Left();
-                else
-                    t = t->Right();
-            }
-        }
-        return t;
-    }*/
-
-
 
     /// Удаление узла
     void Delete() {
@@ -321,21 +287,17 @@ public:
     }
 
     /// Удаление дерева
-    void DeleteTree() {
-        if(this->Left() != nullptr)
-        this->Left()->DeleteTree();
+    void DeleteTree(TreeNode<T>* root) {
+        if (root == nullptr)
+            return;
 
-        if (this->Right() != nullptr)
-        this->Right()->DeleteTree();
+        if (root->Left() != nullptr)
+            DeleteTree(root->Left());
 
-        if (this != nullptr)
-        this->Delete();
-    }
+        if (root->Right() != nullptr)
+            DeleteTree(root->Right());
 
-    /// Добавление узла в массив
-    void AddToArray(T arr[], int &i) {
-        arr[i] = this->Data();
-        i++;
+        delete root;
     }
 
     /// Печать 
@@ -354,13 +316,13 @@ public:
     /// Обход LNR и вывод в массив
     void AddToArrayLNR(T arr[], int &i)
     {
-        if (this == nullptr)
-            return;
-        this->Left()->AddToArrayLNR(arr, i);
-        this->AddToArray(arr, i);
+        if (this != nullptr)
+        {
+            this->Left()->AddToArrayLNR(arr, i);
+            this->AddToArray(arr, i);
 
-        this->Right()->AddToArrayLNR(arr, i);
-
+            this->Right()->AddToArrayLNR(arr, i);
+        }
     }
 
     /// Обход NLR и вывод в массив
@@ -382,4 +344,93 @@ public:
         this->AddToArray(arr, i);
         this->Left()->AddToArrayRNL(arr, i);
     }
+
+    /// Удвоение значения всех узлов
+    template <class T>
+    void Double(TreeNode<T>* root) {
+        if (root == nullptr) return;
+        root->SetData(root->Data()*2);
+        root->Left()->Double(root->Left());
+        root->Right()->Double(root->Right());
+    }
+
+    /// Копирование дерева
+    TreeNode<T>* CopyTree(const TreeNode<T>* root)
+    {
+        /// root - указатель на текущий узел
+        if (root == nullptr)
+            return nullptr;
+
+        /// Создаем новое дерево и задаем ему значение корня первого дерева
+        TreeNode<T>* newRoot = new TreeNode<T>(root->Data());
+        /// Рекурсивно вызываем метод для левого и правого поддерева
+        newRoot->SetLeft(CopyTree(root->Left()));
+        newRoot->SetRight(CopyTree(root->Right()));
+
+        return newRoot;
+    }
 };
+
+
+//void Remove(T key) {
+//    TreeNode<T>* parent;
+//    TreeNode<T>* root = this;
+//    /// Если дерево пустое
+//    if (root == nullptr) return /*nullptr*/;
+//    if (key < root->Data()) {
+//        /// Удаление в левом поддереве
+//        root->Left()->Remove(key);
+//    }
+//    else if (key > root->Data()) {
+//        /// Удаление в правом поддереве
+//        root->Right()->Remove(key);
+//    }
+//    /// Если узел найден
+//    else {
+//        /// Если нет потомков
+//        if (root->Left() == nullptr && root->Right() == nullptr) {
+//            root->Delete();
+//            //root = nullptr;
+//        }
+//        /// Имеет только левого потомка
+//        else if (root->Left() != nullptr && root->Right() == nullptr) {
+//            root->SearchParent(key)->SetLeft(root->Left());
+//            root->Delete();
+//        }
+//        /// Имеет только правого потомка
+//        else if (root->Right() != nullptr && root->Left() != nullptr) {
+//            root->SearchParent(key)->SetRight(root->Right());
+//            root->Delete();
+//        }
+//        /// Имеет оба потомка
+//        else {
+//            TreeNode<T>* successor = root->Successor();
+//            root = successor;
+//            successor->Remove();
+//        }
+//    }
+//    //return root;
+//}
+
+
+
+/*/// Поиск узла в дереве с возвратом указателя на узел, если он есть
+TreeNode<T>* Search(const T& item, TreeNode<T>* root_)
+{
+    TreeNode<T>* t = root_;
+    root_ = nullptr;
+    while (t != nullptr)
+    {
+        if (item == t->Data())
+            break;
+        else
+        {
+            root_ = t;
+            if (item < t->Data())
+                t = t->Left();
+            else
+                t = t->Right();
+        }
+    }
+    return t;
+}*/

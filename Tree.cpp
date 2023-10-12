@@ -7,21 +7,31 @@ using namespace std;
 
 int main()
 {
-	TreeNode<int>* root_3 = new TreeNode<int>();
-	root_3->Insert(10);//          10  
-	root_3->Insert(5);//       5        15
-	root_3->Insert(2);///  2     6   12
-	root_3->Insert(6);///
-	root_3->Insert(15);///           
-	root_3->Insert(12);///  
+	TreeNode<int>* root_1 = new TreeNode<int>();
+	root_1->Insert(5);/// вырожденное 5    
+	root_1->Insert(10);///               10
+	root_1->Insert(20);///                   20
+	root_1->Insert(30);///                       30    
+	root_1->Insert(40);///                           40
 
-	cout << root_3->Search(11)->Data() << endl;
-	root_3->Remove(5);
+	
 
 
 
+	cout << "COPY:" << endl;
+	TreeNode<int>* root_2 = root_1->CopyTree(root_1);
+	
+	//root_2->CopyTree(root_1);
 
-	cout << root_3->SearchParent(2)->Data();
+	int* arr = new int[root_2->Size()];
+	int i = 0;
+
+	root_2->AddToArrayLNR(arr, i);
+
+	for (int i = 0; i < root_2->Size(); i++)
+	{
+		cout << arr[i] << " ";
+	}
 
 }
 
