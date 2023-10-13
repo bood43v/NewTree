@@ -16,7 +16,6 @@ private:
     }
 public:
 
-
     /// Конструктор без параметров
     TreeNode() :
         data(NULL), left(nullptr), right(nullptr) {};
@@ -213,7 +212,7 @@ public:
     /// Следующий наибольший узел
     TreeNode<T>* Successor(const T &key) {
         /// текущий узел
-        TreeNode<T>* curr = this->Search(key);
+        TreeNode<T>* curr = Search(key);
         /// если пустой
         if (curr == nullptr) return nullptr;
         /// если есть правый потомок ищем его самого левого потомка
@@ -237,7 +236,8 @@ public:
         }
     }
 
-    TreeNode<T>* Remove(TreeNode<T>* root, const T &key) {
+    /// Удаление узла - возвращаем указатель корень дерева с удаленным узлом
+    TreeNode<T>* Remove(TreeNode<T>* root, const T& key) {
         TreeNode<T>* parent;
 
         /// Если пусто
@@ -355,8 +355,9 @@ public:
     }
 
     /// Копирование дерева
-    TreeNode<T>* CopyTree(const TreeNode<T>* root)
+    TreeNode<T>* CopyTree()
     {
+        const TreeNode<T>* root = this;
         /// root - указатель на текущий узел
         if (root == nullptr)
             return nullptr;
@@ -364,8 +365,8 @@ public:
         /// Создаем новое дерево и задаем ему значение корня первого дерева
         TreeNode<T>* newRoot = new TreeNode<T>(root->Data());
         /// Рекурсивно вызываем метод для левого и правого поддерева
-        newRoot->SetLeft(CopyTree(root->Left()));
-        newRoot->SetRight(CopyTree(root->Right()));
+        newRoot->SetLeft(root->Left()->CopyTree());
+        newRoot->SetRight(root->Right()->CopyTree());
 
         return newRoot;
     }
