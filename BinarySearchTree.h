@@ -14,21 +14,45 @@ private:
     TreeNode<T>* root;/// корень
     TreeNode<T>* curr;/// текущий узел
    
-
+    /// Рекурсивная функция для удаления дерева
+    void DeleteTree(TreeNode<T>* node) {
+        if (node) {
+            DeleteTree(node->Left());   // Рекурсивно удаляем левое поддерево
+            DeleteTree(node->Right());  // Рекурсивно удаляем правое поддерево
+            delete node;                // Удаляем текущий узел
+        }
+    }
 public:
     /// Конструктор без параметров
     BSTree() {
-        root = nullptr;
-        curr = nullptr;
+        root = new TreeNode<T>();
+        curr = new TreeNode<T>();
     };
 
-    /// Конструктор без параметров
+    /// Конструктор с параметром - корень дерева
     BSTree(const T& node) {
         this->Insert(node);
     };
 
+    /// Конструктор копирования
+    BSTree(const BSTree<T>& tree) {
+        root = CopyTree(tree->root);
+    }
+
+    /// Оператор присваивания
+    BSTree<T>& operator=(const BSTree<T>& tree) {
+        if (this == &tree) {
+            return *this;               /// Проверка на самоприсваивание
+        }
+        DeleteTree(root);               /// Освобождаем память текущего дерева
+        root = CopyTree(tree->Root());  /// Копируем узлы из исходного дерева в новое дерево
+        return *this;                   /// Возвращаем ссылку на текущий объект
+    }
+
     /// Деструктор
-    ~BSTree() {};
+    ~BSTree() {
+        DeleteTree(root);   
+    };
 
     /// Вернуть данные
     T Data(TreeNode<T>* curr) const
@@ -101,6 +125,6 @@ public:
 
     /// Удвоение значения всех узлов
     void Double() {
-        root->Double();
+        root->Double(root);
     }
 };

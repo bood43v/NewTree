@@ -2,18 +2,19 @@
 /// @author Будаев Г.Б.
 #pragma once
 
+
+/// <summary>
+/// шаблонный класс узел бинарного дерева
+/// </summary>
+/// <typeparam name="T"></typeparam>
 template <class T>
 class TreeNode
 {
 private:
-    TreeNode<T>* left;
-    TreeNode<T>* right;
-    T data;
-    /// Добавление узла в массив
-    void AddToArray(T arr[], int& i) {
-        arr[i] = this->Data();
-        i++;
-    }
+    TreeNode<T>* left; /// левый потомок
+    TreeNode<T>* right;/// правый потомок
+    T data;            /// данные
+
 public:
 
     /// Конструктор без параметров
@@ -23,6 +24,7 @@ public:
     /// Конструктор
     TreeNode(const T& data_, TreeNode<T>* left_ = nullptr, TreeNode<T>* right_ = nullptr) :
         data(data_), left(left_), right(right_) {};
+
 
 
     /// Вернуть указатель на левого потомка
@@ -63,61 +65,67 @@ public:
     /// Поиск узла в дереве с возвратом указателя на узел, если он есть
     TreeNode<T>* Search(const T& key)
     {
-        TreeNode<T>* t = this;
-        
-        if (t == nullptr) return nullptr;
+        // node - указатель на текущий узел дерева (изначально на корень)
+        TreeNode<T>* node = this;
+        // если nullptr - дерево пустое
+        if (node == nullptr) return nullptr;
 
-        while (t != nullptr)
+        // пока не дошли до листа
+        while (node != nullptr)
         {
-            if (key == t->Data())
+            // если узел найден - выход
+            if (key == node->Data())
                 break;
+            // иначе поиск в левом и правом поддереве, в зависимости от < или > текущего узла
             else
             {
                 //root_ = t;
-                if (key < t->Data())
-                    t = t->Left();
+                if (key < node->Data())
+                    node = node->Left();
                 else
-                    t = t->Right();
+                    node = node->Right();
             }
         }
-        return t;
+        // позвращаем указатель на найденный узел
+        return node;
     }
-
-    /// todo: Не работает в вырожденном дереве
 
     /// Поиск узла в дереве с возвратом указателя на узел, если он есть
     TreeNode<T>* SearchParent(const T& key)
     {
-        TreeNode<T>* t = this;
+        // указатель на текущий узел
+        TreeNode<T>* node = this;
+        // указатель на родителя текущего узла
         TreeNode<T>* parent = nullptr;
 
-        if (t->Search(key) == nullptr) return nullptr;
-        if (t->Data() == key) return nullptr;
+        // если узел не найден - nullptr
+        if (node->Search(key) == nullptr) return nullptr;
+        // если искомый узел - корень -> возвращаем nullptr (нет родителя)
+        if (node->Data() == key) return nullptr;
 
-        while (t != nullptr)
+        // пока не дойдем до листа
+        while (node != nullptr)
         {
-            if ((t->Left() != nullptr && key == t->Left()->Data()) || (t->Right() != nullptr && key == t->Right()->Data()) )
+            // если есть левый/правый потомок и он является искомым, то запоминаем родителя и выходим
+            if ((node->Left() != nullptr && key == node->Left()->Data()) || (node->Right() != nullptr && key == node->Right()->Data()) )
             {
-                parent = t;
+                parent = node;
                 break;
             }  
+            // иначе двигаемся по дереву влево/вправо
             else
             {
-                if (key < t->Data())
-                   t = t->Left();
+                if (key < node->Data())
+                   node = node->Left();
                 else
-                   t = t->Right();
+                   node = node->Right();
             }
         }
         
+        // возвращаем указатель на родителя
         return parent;
     }
-   /* root_1->Insert(5);/// вырожденное 5    
-    root_1->Insert(10);///               10
-    root_1->Insert(20);///                   20
-    root_1->Insert(30);///                       30    
-    root_1->Insert(40);///                      40
-     */
+
 
     /// Вставка узла
     void Insert(const T& key)
@@ -158,34 +166,48 @@ public:
     /// <returns></returns>
     int Size()
     {
-        int left, right;
-        TreeNode<T>* node = this;
-        if (node->Left() == nullptr && node->Right() == nullptr)
-            return 1;
+        if (this != nullptr) {
+            // кол-во элементов в левом и правом поддереве
+            int left, right;
+            // указатель на текущий узел
+            TreeNode<T>* node = this;
+            // если нет потомков -> 1 узел(текущий)
+            if (node->Left() == nullptr && node->Right() == nullptr)
+                return 1;
 
+            // если есть левое поддерево -> рекурсивно вызываем Size()
+            if (node->Left() != nullptr)
+                left = node->Left()->Size();
+            // иначе возвращаем 0
+            else left = 0;
 
-        if (node->Left() != nullptr)
-            left = node->Left()->Size();
-        else left = 0;
+            // если есть правое поддерево -> рекурсивно вызываем Size()
+            if (node->Right() != nullptr)
+                right = node->Right()->Size();
+            // иначе возвращаем 0
+            else right = 0;
 
-        if (node->Right() != nullptr)
-            right = node->Right()->Size();
-        else right = 0;
-
-        return left + right + 1;
+            // возвращаем кол-во узлов в левом и правом поддереве +1 (корень дерева)
+            return left + right + 1;
+        }
+        else return 0;
     }
 
     /// Глубина дерева
     int Depth() {
-        TreeNode<T>* t = this;
+        // node - указатель на текущий узел
+        TreeNode<T>* node = this;
+        // глубина левого, правого поддерева и конечная глубина
         int depthLeft, depthRight, depth;
         /// Если дерево пустое
-        if (t == nullptr) {
+        if (node == nullptr) {
             depth = -1;
         }
+        // иначе рекурсивно вызываем Depth()
         else {
-            depthLeft = t->Left()->Depth();
-            depthRight = t->Right()->Depth();
+            depthLeft = node->Left()->Depth();
+            depthRight = node->Right()->Depth();
+            // depth равен 1 + наибольшее из depthLeft и depthRight
             depth = 1 + (depthLeft > depthRight ? depthLeft : depthRight);
         }
         return depth;
@@ -280,25 +302,22 @@ public:
         return root;
     }
 
-    /// Удаление узла
-    void Delete() {
-        delete this;
-        //this = nullptr;
-    }
 
-    /// Удаление дерева
-    void DeleteTree(TreeNode<T>* root) {
-        if (root == nullptr)
-            return;
 
-        if (root->Left() != nullptr)
-            DeleteTree(root->Left());
 
-        if (root->Right() != nullptr)
-            DeleteTree(root->Right());
+    ///// Удаление дерева
+    //void DeleteTree(TreeNode<T>* root) {
+    //    if (root == nullptr)
+    //        return;
 
-        delete root;
-    }
+    //    if (root->Left() != nullptr)
+    //        DeleteTree(root->Left());
+
+    //    if (root->Right() != nullptr)
+    //        DeleteTree(root->Right());
+
+    //    delete root;
+    //}
 
     /// Печать 
     void PrintNodeData()
@@ -319,7 +338,8 @@ public:
         if (this != nullptr)
         {
             this->Left()->AddToArrayLNR(arr, i);
-            this->AddToArray(arr, i);
+            arr[i] = this->Data();
+            i++;
 
             this->Right()->AddToArrayLNR(arr, i);
         }
@@ -330,7 +350,8 @@ public:
     {
         if (this == nullptr)
             return;
-        this->AddToArray(arr, i);
+        arr[i] = this->Data();
+        i++;
         this->Left()->AddToArrayNLR(arr, i);
         this->Right()->AddToArrayNLR(arr, i);
     }
@@ -341,7 +362,8 @@ public:
         if (this == nullptr)
             return;
         this->Right()->AddToArrayRNL(arr, i);
-        this->AddToArray(arr, i);
+        arr[i] = this->Data();
+        i++;
         this->Left()->AddToArrayRNL(arr, i);
     }
 
@@ -371,6 +393,7 @@ public:
         return newRoot;
     }
 };
+
 
 
 //void Remove(T key) {
